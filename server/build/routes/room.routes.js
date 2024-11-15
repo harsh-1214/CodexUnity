@@ -1,0 +1,21 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const room_1 = require("../controller/room");
+const authMiddleware_1 = require("../middleware/authMiddleware");
+const router = express_1.default.Router();
+router.post("/", authMiddleware_1.authMiddleware, room_1.createRoom);
+router.get("/:roomId", room_1.getRoomById);
+router.post("/join", authMiddleware_1.authMiddleware, room_1.joinRoom);
+router.patch("/");
+router.get('/get-comments/:roomId', room_1.getCommentsByRoomId);
+router.get('/get-versions/:roomId', room_1.getVersionsByRoomId);
+router.post('/post-comment', room_1.createComment);
+router.post('/create-delta', room_1.createDelta);
+router.post('/get-version-and-deltas', room_1.getLatestVersionAndDeltas);
+router.post('/create-version', room_1.createVersion);
+router.get('/get-delta/:versionId', room_1.getDeltaByVersionId);
+exports.default = router;
