@@ -41,7 +41,6 @@ This project is a comprehensive full-stack web application built with modern tec
 
 Check out a demo of the application below:
 
-https://www.youtube.com/watch?v=Z_RTv4PCIa0&t=15s
 
 ---
 
