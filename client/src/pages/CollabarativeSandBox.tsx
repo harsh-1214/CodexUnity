@@ -92,6 +92,7 @@ const CollaborativeSandBox: React.FC = () => {
   const [triggerReRender, setTriggerReRender] = useState(false);
   const previousCodeForVersion = useRef<string>("");
   const [currentVersionId, setCurrentVersionId] = useState("");
+  const [db, setDb] = useState<IDBDatabase>();
 
   const debouncedContentChange = useDebouncedCallback(
     // function
@@ -103,8 +104,80 @@ const CollaborativeSandBox: React.FC = () => {
       setTriggerReRender((prev) => !prev);
     },
     // delay in ms
-    1000 * 60 * 2
+    1000 * 5
   );
+
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  function syncCode(roomId : string,versionId : string) {
+    if (typeof window == undefined) return;
+    // const isOnline = window.navigator.onLine;
+    // if (!isOnline) return;
+
+    console.log("syncDocuments function called");
+    return new Promise((resolve, reject) => {
+      // Open the database
+      const request = indexedDB.open("documentEditorDB", 1);
+
+      request.onsuccess = (event) => {
+        const db = (event.target as IDBOpenDBRequest).result;
+        const transaction = db.transaction(["documents"], "readwrite");
+        const store = transaction.objectStore("documents");
+        const getAllRequest = store.getAll();
+        
+        getAllRequest.onsuccess = () => {
+          const documents = getAllRequest.result;
+          const myDocuments = documents.filter( (val) => val.roomId === roomId).sort( (a,b) => {
+            const date1= new Date(a.createdAt) 
+            const date2 =  new Date(b.createdAt);
+            return date1.getTime() - date2.getTime();
+          });
+          const content = applyDeltas(code,myDocuments);
+          console.log(content);
+          // resolve();
+          // Send documents to the server
+          myDocuments.forEach(async (deltas) => {
+            try {
+    
+              const response = await createDelta({
+                diffs: deltas.diffs,
+                versionId,
+                roomId,
+              });
+    
+              console.log('Response from createDelta:', response);
+    
+              if (!!response) {
+                // Open a new transaction to delete the document
+                const deleteTransaction = db.transaction(["documents"], "readwrite");
+                const deleteStore = deleteTransaction.objectStore("documents");
+                deleteStore.delete(deltas.id);
+                deleteTransaction.oncomplete = () => {
+                  console.log('Deleted document with id:', deltas.id);
+                };
+              } else {
+                console.log('Failed To Syncing Documents');
+              }
+            } catch (err) {
+              console.log('Error In Syncing Documents !!', err);
+            }
+          });
+          setPreviousCodeForDelta(debouncedCode.current ?? "");
+
+        };
+
+        getAllRequest.onerror = () => {
+          console.error("Error retrieving documents");
+          reject();
+        };
+      };
+
+      request.onerror = () => {
+        console.error("Error opening database");
+        reject();
+      };
+    });
+  }
 
   const {
     data: comments,
@@ -140,11 +213,13 @@ const CollaborativeSandBox: React.FC = () => {
     let content = initialcode;
     const dmp = new diff_match_patch();
 
+    console.log('Intial Content : ',content);
+
     if (!deltas || deltas.length === 0) return content;
 
     deltas.forEach((deltaObject) => {
       const diffs = deltaObject.diffs;
-      // console.log("Diffs : ", diffs);
+      console.log("Diffs : ", diffs);
       const patches = dmp.patch_make(diffs);
       // console.log("Patches : ", patches);
 
@@ -154,7 +229,7 @@ const CollaborativeSandBox: React.FC = () => {
       content = patchedContent;
     });
 
-    // console.log("Content", content);
+    console.log("Content", content);
     return content;
   }
 
@@ -180,7 +255,24 @@ const CollaborativeSandBox: React.FC = () => {
         setPreviousCodeForDelta(latestCode);
         previousCodeForVersion.current = latestCode;
 
-        // console.log(latestCode);
+        // Starting IndexedDb
+        const request = indexedDB.open("documentEditorDB", 1);
+
+        request.onupgradeneeded = (event) => {
+          const db = (event.target as IDBOpenDBRequest).result;
+          db.createObjectStore("documents", { keyPath: "id" ,autoIncrement : true});
+        };
+
+        request.onsuccess = (event) => {
+          const db = (event.target as IDBOpenDBRequest).result;
+          console.log(db);
+          setDb(db);
+          console.log("Database Intialized Successfully");
+          // Database is ready to use
+        };
+        request.onerror = (event) => {
+          console.error("Database initialization failed", event);
+        };
       } catch (err: any) {
         // Either RoomId is wrong, Or There is no versions Present
         console.log("Failed to load Latest Version");
@@ -189,6 +281,22 @@ const CollaborativeSandBox: React.FC = () => {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      if(!roomId) return;
+      syncCode(roomId,currentVersionId);
+    };
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    // Clean up event listeners on component unmount
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [currentVersionId,roomId]);
 
   useEffect(() => {
     const intervalId = setInterval(async () => {
@@ -233,8 +341,8 @@ const CollaborativeSandBox: React.FC = () => {
     if (!roomId) return;
 
     (async () => {
-      console.log("Previous code for delta", previousCodeForDelta);
-      console.log("Debounced Code", debouncedCode);
+      // console.log("Previous code for delta", previousCodeForDelta);
+      // console.log("Debounced Code", debouncedCode);
 
       if (debouncedCode.current === previousCodeForDelta) return;
       console.log("Creating Deltas");
@@ -243,14 +351,41 @@ const CollaborativeSandBox: React.FC = () => {
         debouncedCode.current ?? ""
       );
 
-      // Maybe we should Create new version if there is no version,
-      const response = await createDelta({
-        diffs,
-        versionId: currentVersionId,
-        roomId,
-      });
-      setPreviousCodeForDelta(debouncedCode.current ?? "");
-    })();
+      console.log('Online Status : ',isOnline);
+      // Save Deltas in IndexedDb If they are offline
+      if (!isOnline) {
+        console.log('Db and diffs' , db, " " ,diffs);
+        if (!db || !diffs) return;
+
+        const transaction = db.transaction(["documents"], "readwrite");
+        const store = transaction.objectStore("documents");
+        store.put({ roomId, diffs, createdAt : new Date() });
+        console.log('Debounced Code in creating deltas in IDB : ',debouncedCode.current);
+        console.log('Previous Code in creating deltas : ',previousCodeForDelta);
+        setPreviousCodeForDelta(debouncedCode.current ?? "");
+
+        transaction.oncomplete = () => {
+          console.log("Document saved successfully");
+        };
+
+        transaction.onerror = () => {
+          console.error("Error saving document");
+        };
+      }
+      else{
+        // Maybe we should Create new version if there is no version,
+        const response = await createDelta({
+          diffs,
+          versionId: currentVersionId,
+          roomId,
+        });
+        setPreviousCodeForDelta(debouncedCode.current ?? "");
+      }
+
+      
+    })().catch( () => {
+      console.log('Something Went Wrong in Creating Deltas !!');
+    });
   }, [debouncedCode.current, roomId]);
 
   useEffect(() => {
@@ -652,7 +787,7 @@ const CollaborativeSandBox: React.FC = () => {
         applyDeltas={applyDeltas}
         participants={participants}
         setShowModal={setShowModal}
-        handleSetRestoredCode = {handleSetRestoredCode}
+        handleSetRestoredCode={handleSetRestoredCode}
       />
 
       <div className="flex relative">
@@ -691,7 +826,7 @@ const CollaborativeSandBox: React.FC = () => {
             />
           </ResizablePanel>
           <ResizableHandle withHandle={true} />
-          <ResizablePanel defaultSize={25}>
+          <ResizablePanel defaultSize={25} minSize={15}>
             <div className="bg-black border text-green-400 h-full w-full">
               <h2>Output:</h2>
               <pre className="text-green-400 break-all whitespace-pre-wrap">
