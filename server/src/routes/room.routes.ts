@@ -1,5 +1,5 @@
 import express from 'express';
-import { createComment, createDelta, createRoom, createVersion, getCommentsByRoomId, getDeltaByVersionId, getLatestVersionAndDeltas, getRoomById,getVersionsByRoomId,joinRoom } from '../controller/room';
+import { createComment, createDelta, createRoom, createVersion, getCommentsByRoomId, getDeltaByVersionId, getLatestVersionAndDeltas, getRoomById,getVersionsByRoomId,joinRoom, updateVersionId } from '../controller/room';
 import {authMiddleware} from '../middleware/authMiddleware'
 const router = express.Router();
 
@@ -14,4 +14,5 @@ router.post('/create-delta',createDelta);
 router.post('/get-version-and-deltas',getLatestVersionAndDeltas)
 router.post('/create-version',createVersion);
 router.get('/get-delta/:versionId',getDeltaByVersionId)
+router.post('/update-version',updateVersionId)
 export default router;

@@ -148,16 +148,17 @@ const Home = ({ user }: { user: User }) => {
             {/* listing */}
             {/* <AllSandBoxs/> */}
             <div>
+
               <ul className="flex w-full max-w-[730px] flex-col gap-5">
-                {files &&
+                {files && files.length > 0 && 
                   files.map((file: File) => (
-                    <li className="flex items-center justify-between gap-4 rounded-lg bg-doc bg-cover p-5 shadow-xl">
+                    <li  key = {file._id} className="flex items-center justify-between gap-4 rounded-lg bg-doc bg-cover p-5 shadow-xl">
                       <Link to = {`/sandbox/${user?._id}/${file._id}`} className="flex flex-1 items-center gap-4">
                         <div className="hidden rounded-md bg-dark-500 p-2 sm:block">
                           <img
                             src={cn(
                               file.language === "c" && "/c.png",
-                              file.language === "javascript" &&
+                              (file.language === "javascript" || file.language === '') &&
                                 "/javascript.png",
                               file.language === "cpp" && "/cpp.png",
                               file.language === "python" && "/python.png",
@@ -179,6 +180,10 @@ const Home = ({ user }: { user: User }) => {
                     </li>
                   ))}
               </ul>
+              
+              {
+                files && files.length === 0 && ( <div className="flex h-[70vh] w-full justify-center items-center bg-doc rounded-lg shadow-md"> <p className="text-gray-500 font-semibold">Sorry, there are no files available.</p> </div> )
+              }
             </div>
           </div>
         </div>

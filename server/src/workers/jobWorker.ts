@@ -19,7 +19,7 @@ const worker = new Worker("jobQueue",async (job)=>{
 
     switch (language.toLowerCase()) {
         case 'javascript':
-            image = 'node';
+            image = 'node:alpine';
             command = ['node', '-e', code];
             break;
         case 'java':
@@ -67,10 +67,11 @@ const worker = new Worker("jobQueue",async (job)=>{
 
         const containerLogs = await container.logs({ stdout: true, stderr: true});
         const containerResult = containerLogs.toString('utf-8').trim().substring(8);
+        console.log(containerResult);
         data["completedAt"] = new Date();
         data["status"] = "success";
         data["output"] = containerResult;
-        console.log('Successfullt run code');
+        console.log('Successfully run code');
         await Job.findByIdAndUpdate(data._id,data);
     } catch (error:any) { 
         data["completedAt"] = new Date();

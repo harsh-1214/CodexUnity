@@ -29,11 +29,11 @@ interface SandBoxNavProps {
   code: string;
   setCode: React.Dispatch<React.SetStateAction<string>>;
   runCode: () => Promise<void>;
-  applyDeltas : (intialCode : string,deltas : DeltaInterface[]) => string;
+  applyDeltas? : (intialCode : string,deltas : DeltaInterface[]) => string;
   room?:IRoom;
   setShowModal?: React.Dispatch<React.SetStateAction<boolean>>
   participants?:Participant[];
-  handleSetRestoredCode : (code : string) => void  
+  handleSetRestoredCode? : (code : string,versionId : string) => void  
 }
 const SandBoxNav: React.FC<SandBoxNavProps> = ({
   language,
@@ -76,7 +76,7 @@ const SandBoxNav: React.FC<SandBoxNavProps> = ({
             setLanguage(e.target.value);
           }}
         >
-          <option value="vs-dark">Javascript</option>
+          <option value="javascript">Javascript</option>
           <option value="java">Java</option>
           <option value="c">C</option>
           <option value="cpp">C++</option>
@@ -105,10 +105,12 @@ const SandBoxNav: React.FC<SandBoxNavProps> = ({
           <FaRegSave fill="#fff"   size={30} />
         </button>
       }
-      <button className="mx-2">
+      {/* <button className="mx-2">
         <MdOutlineMessage color="white" size={30}/>
-      </button>
-      <VersionBox applyDeltas={applyDeltas} handleSetRestoredCode = {handleSetRestoredCode} roomId={room?._id}/>
+      </button> */}
+      {
+        applyDeltas && handleSetRestoredCode && <VersionBox applyDeltas={applyDeltas} handleSetRestoredCode = {handleSetRestoredCode} roomId={room?._id}/>
+      }
       <button
         disabled={running}
         className="bg-green-600 text-sm flex items-center px-2 py-1 md:py-2 md:px-3 rounded-lg text-white hover:bg-green-700"

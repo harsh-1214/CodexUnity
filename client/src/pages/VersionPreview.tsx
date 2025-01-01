@@ -23,7 +23,7 @@ export default function VersionBox({
 }: {
   roomId: string | undefined;
   applyDeltas: (initialcode: string, deltas: DeltaInterface[]) => string;
-  handleSetRestoredCode : (code : string) => void
+  handleSetRestoredCode : (code : string,versionId : string) => void
 }) {
   const editorOptions = {
     selectOnLineNumbers: true,
@@ -82,8 +82,10 @@ export default function VersionBox({
   } ,[versions]);
   
   function handleRestore(){
+    if(!versions) return;
     setIsRestoreLoading(true);
-    handleSetRestoredCode(code);
+    console.log(versions[selectedVersion]._id);
+    handleSetRestoredCode(code,versions[selectedVersion]._id);
     setIsRestoreLoading(false);
     dialogCloseRef.current?.click();
   }
@@ -122,7 +124,7 @@ export default function VersionBox({
               <h2 className="text-xl font-semibold">Versions and History</h2>
             </div>
             <div className="flex-grow overflow-y-auto">
-              {versions &&
+              {versions && versions.length > 0 && 
                 versions.map((version, index) => (
                   <div
                     className="flex-grow"

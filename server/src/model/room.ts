@@ -6,6 +6,7 @@ export interface IRoom extends Document {
   author: ObjectId;
   participants: { name: string; id: ObjectId }[];
   sandbox: ObjectId;
+  currentVersionId : ObjectId;
 }
 
 const RoomSchema = new mongoose.Schema<IRoom>(
@@ -23,6 +24,10 @@ const RoomSchema = new mongoose.Schema<IRoom>(
       type: mongoose.Types.ObjectId,
       ref: "User",
       required: [true, "Author id is required"],
+    },
+    currentVersionId : {
+      type: mongoose.Types.ObjectId,
+      ref: "User",
     },
     participants: {
       type: [

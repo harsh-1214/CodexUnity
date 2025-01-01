@@ -10,7 +10,6 @@ import RoomDetailsModal from "../components/RoomDetailsModal";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import useAxios from "../hooks/useAxios";
 import useRoomService from "../hooks/useRoom";
-import { queryClient } from "@/main";
 
 import diff_match_patch, { Diff } from "diff-match-patch";
 
@@ -19,7 +18,7 @@ import { initSocket } from "../sockets/initSocket";
 import { Actions } from "../sockets/Actions";
 import ErrorBoundary from "../components/Error";
 import { User } from "../types/user";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -54,6 +53,10 @@ const CollaborativeSandBox: React.FC = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [participants, setParticipants] = useState<Participant[]>([]);
 
+  // This is an updated code, due to circular dependency, if not resolved, just export the query client instead 
+  // from main.tsx, but from a new file, somelike queryClient.tsx, 
+  const queryClient = useQueryClient();
+
   const user = useAppSelector((state) => state.auth.user);
   const userId = user?._id || "";
 
@@ -76,6 +79,7 @@ const CollaborativeSandBox: React.FC = () => {
     createVersion,
     createDelta,
     loadIntialVersionAndDeltas,
+    updateVersionId,
   } = useRoomService();
   const navigate = useNavigate();
   const axios = useAxios();
@@ -104,7 +108,7 @@ const CollaborativeSandBox: React.FC = () => {
       setTriggerReRender((prev) => !prev);
     },
     // delay in ms
-    1000 * 5
+    1000 * 10
   );
 
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -124,7 +128,7 @@ const CollaborativeSandBox: React.FC = () => {
         const transaction = db.transaction(["documents"], "readwrite");
         const store = transaction.objectStore("documents");
         const getAllRequest = store.getAll();
-        
+         
         getAllRequest.onsuccess = () => {
           const documents = getAllRequest.result;
           const myDocuments = documents.filter( (val) => val.roomId === roomId).sort( (a,b) => {
@@ -195,6 +199,16 @@ const CollaborativeSandBox: React.FC = () => {
         queryKey: ["comments", { roomId }],
       });
       setIsAddingComment(false);
+    },
+  });
+  const { mutate : mutateVersion } = useMutation({
+    mutationFn: createVersion,
+    onSuccess( data ) {
+      queryClient.invalidateQueries({
+        queryKey: ["versions", { roomId }],
+      });
+      setCurrentVersionId(data._id);
+      previousCodeForVersion.current = debouncedCode.current;
     },
   });
 
@@ -307,23 +321,23 @@ const CollaborativeSandBox: React.FC = () => {
 
       // Check conditions to create version
       if (
+        !debouncedCode.current ||
         previousCodeForVersion.current === debouncedCode.current ||
         !roomId ||
-        !debouncedCode.current ||
         !language
       )
         return;
 
       console.log("Creating Version");
-      const response = await createVersion({
-        roomId,
-        code: debouncedCode.current,
-        language,
-      });
-      console.log(response);
-      setCurrentVersionId(response._id);
-      previousCodeForVersion.current = debouncedCode.current;
-    }, 1000 * 60 * 30);
+      mutateVersion({roomId,code : debouncedCode.current,language});
+      // const response = await createVersion({
+      //   roomId,
+      //   code: debouncedCode.current,
+      //   language,
+      // });
+      // setCurrentVersionId(response._id);
+      // previousCodeForVersion.current = debouncedCode.current;
+    }, 1000 * 30);
 
     return () => clearInterval(intervalId);
   }, []);
@@ -344,7 +358,7 @@ const CollaborativeSandBox: React.FC = () => {
       // console.log("Previous code for delta", previousCodeForDelta);
       // console.log("Debounced Code", debouncedCode);
 
-      if (debouncedCode.current === previousCodeForDelta) return;
+      if ( !debouncedCode.current || debouncedCode.current === previousCodeForDelta) return;
       console.log("Creating Deltas");
       const diffs = calculateDiffs(
         previousCodeForDelta,
@@ -635,11 +649,7 @@ const CollaborativeSandBox: React.FC = () => {
       }, 1000);
     } catch (error: any) {
       setRunning(false);
-      if (error.response) {
-        notify(error.response.data, false);
-        return;
-      }
-      notify(error.message, false);
+      notify(error.response.data.message || error.message, false);
       console.error("Error running code:", error);
     }
   };
@@ -743,11 +753,21 @@ const CollaborativeSandBox: React.FC = () => {
     }
   };
 
-  function handleSetRestoredCode(code: string) {
+  function handleSetRestoredCode(code: string,versionId : string) {
+    
+    if(!roomId){
+      notify("Please Join a Room",false);
+      return;
+    }
+
     setCode(code);
     setPreviousCodeForDelta(code);
     previousCodeForVersion.current = code;
-    // What to do of Version Id,
+
+    // Updating Version ID
+    updateVersionId({versionId,roomId});
+    setCurrentVersionId(versionId);
+
   }
 
   // const handleVersionClick = (versionId: string, code: string) => {

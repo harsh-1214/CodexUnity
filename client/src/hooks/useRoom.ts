@@ -116,7 +116,16 @@ const useRoomService = () => {
 
     }
 
+    const updateVersionId = async({versionId,roomId} : {versionId : string,roomId : string}) => {
+        try {
+            const {data} = await api.post(`/room/update-version/`,{versionId,roomId});
+            return data.data
+        } catch (error : any) {
+            throw new Error(error.response?.data.message || 'Something went wrong');
+        }    
+    }
 
-    return { createRoom,getRoom,joinRoom ,getAllComments,postCommentOrReplies,createVersion,createDelta,loadIntialVersionAndDeltas,getAllversions,getDeltaByVersionId};
+
+    return { createRoom,getRoom,joinRoom ,getAllComments,postCommentOrReplies,createVersion,createDelta,loadIntialVersionAndDeltas,getAllversions,getDeltaByVersionId,updateVersionId};
 };
 export default useRoomService;
