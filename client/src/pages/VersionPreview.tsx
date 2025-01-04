@@ -12,9 +12,9 @@ import { cn, formatDateToString } from "@/utils/cn";
 import { notify } from "@/utils/notify";
 import MonacoEditor from "@monaco-editor/react";
 import { useQuery } from "@tanstack/react-query";
-import { HistoryIcon, Loader, Loader2 } from "lucide-react";
+import { HistoryIcon, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { FaCalendarAlt, FaSpinner } from "react-icons/fa";
+import { FaCalendarAlt} from "react-icons/fa";
 
 export default function VersionBox({
   roomId,
@@ -40,22 +40,10 @@ export default function VersionBox({
 
   const {
     data: versions,
-    // isLoading,
-    // isError,
   } = useQuery({
     queryKey: ["versions", { roomId }],
     queryFn: getAllversions,
   });
-
-  // if(isLoading){
-
-  //   return (
-  //     <>
-  //       <Loader className="animate-spin"/>
-  //     </>
-  //   )
-
-  // }
 
   async function handleVersionClick(
     versionId: string,
@@ -101,13 +89,8 @@ export default function VersionBox({
         aria-describedby={undefined}
         className="w-full max-w-[90vw] h-[90vh] bg-[#1e1e1e] flex text-white rounded-lg shadow-lg p-4"
       >
-        {/* <VisuallyHidden asChild> */}
         <DialogTitle className="hidden"></DialogTitle>
-        {/* </VisuallyHidden> */}
         <MonacoEditor
-          onMount={(a) => {
-            // editorRef.current = a;
-          }}
           value={code}
           className="h-full border-gray-500"
           width="80vw"
@@ -183,9 +166,3 @@ export default function VersionBox({
     </Dialog>
   );
 }
-
-// export const VersionCard = ({ dateTime }: { dateTime: Date }) => {
-//   return (
-
-//   );
-// };

@@ -67,7 +67,7 @@ if (!self.define) {
     });
   };
 }
-define(['./workbox-a959eb95'], (function (workbox) { 'use strict';
+define(['./workbox-f3eef19a'], (function (workbox) { 'use strict';
 
   self.skipWaiting();
   workbox.clientsClaim();
@@ -82,7 +82,7 @@ define(['./workbox-a959eb95'], (function (workbox) { 'use strict';
     "revision": "3ca0b8505b4bec776b69afdba2768812"
   }, {
     "url": "index.html",
-    "revision": "0.40e1h9843pg"
+    "revision": "0.fjc53mn4ido"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
@@ -94,6 +94,17 @@ define(['./workbox-a959eb95'], (function (workbox) { 'use strict';
     plugins: [new workbox.ExpirationPlugin({
       maxEntries: 50,
       maxAgeSeconds: 300
+    }), new workbox.CacheableResponsePlugin({
+      statuses: [0, 200]
+    })]
+  }), 'GET');
+  workbox.registerRoute(({
+    request
+  }) => request.destination === "document" || request.destination === "script" || request.destination === "style" || request.destination === "image" || request.destination === "font", new workbox.StaleWhileRevalidate({
+    "cacheName": "frontend-cache",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 500,
+      maxAgeSeconds: 86400
     }), new workbox.CacheableResponsePlugin({
       statuses: [0, 200]
     })]

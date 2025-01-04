@@ -12,12 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDeltaByVersionId = exports.getVersionsByRoomId = exports.createVersion = exports.getLatestVersionAndDeltas = exports.createDelta = exports.getCommentsByRoomId = exports.createComment = exports.joinRoom = exports.getRoomById = exports.createRoom = void 0;
+exports.updateVersionId = exports.getDeltaByVersionId = exports.getVersionsByRoomId = exports.createVersion = exports.getLatestVersionAndDeltas = exports.createDelta = exports.getCommentsByRoomId = exports.createComment = exports.joinRoom = exports.getRoomById = exports.createRoom = void 0;
 const asyncHandler_1 = require("../utils/asyncHandler");
 const apiError_1 = require("../utils/apiError");
 const room_1 = require("../model/room");
 const apiResponse_1 = require("../utils/apiResponse");
-const sandbox_1 = require("../model/sandbox");
 const user_1 = require("../model/user");
 const Comment_1 = require("../model/Comment");
 const mongoose_1 = __importDefault(require("mongoose"));
@@ -33,16 +32,16 @@ exports.createRoom = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(vo
     const existedRoom = yield room_1.Room.findOne({ name });
     if (existedRoom)
         throw new apiError_1.ApiError(409, "Room with this room name already exists");
-    const file = yield sandbox_1.SandBox.create({ userId: authorId, title: name });
-    if (!file)
-        throw new apiError_1.ApiError(500, "Something went wrong while creating a file");
+    // const file = await SandBox.create({ userId: authorId, title: name });
+    // if (!file)
+    // throw new ApiError(500, "Something went wrong while creating a file");
     const p = [];
     p.push({ id: authorId, name: authorName });
     const newRoom = yield room_1.Room.create({
         name,
         password,
         author: authorId,
-        sandbox: file,
+        // sandbox: file,
         participants: p,
     });
     if (!newRoom)
@@ -299,33 +298,33 @@ exports.getLatestVersionAndDeltas = (0, asyncHandler_1.asyncHandler)((req, res) 
     if (!roomId) {
         throw new apiError_1.ApiError(400, "Please Give the RoomId");
     }
-    const latestVersion = yield Version_1.Version.find({
-        roomId,
-    })
-        .sort({ createdAt: -1 })
-        .limit(1)
-        .exec();
-    if (!latestVersion || latestVersion.length === 0) {
-        // Check if roomId is present or not
-        const room = yield room_1.Room.findById(roomId);
-        if (!room) {
-            throw new apiError_1.ApiError(400, "Room Not Found");
-        }
+    const currentRoom = yield room_1.Room.findById(roomId);
+    if (!currentRoom) {
+        throw new apiError_1.ApiError(400, "Room Not Found");
+    }
+    if (!currentRoom.currentVersionId) {
         const newVersion = yield Version_1.Version.create({
-            roomId: room._id,
+            roomId: currentRoom._id,
             code: "",
             language: "javascript",
         });
         if (!newVersion) {
             throw new apiError_1.ApiError(500, "Something Went Wrong With Db!");
         }
+        yield room_1.Room.findByIdAndUpdate(roomId, {
+            currentVersionId: newVersion._id,
+        });
         return res
             .status(200)
-            .json(new apiResponse_1.ApiResponse(200, "Successfully Fetched the Version", { latestVersion: newVersion }, true));
+            .json(new apiResponse_1.ApiResponse(200, "Successfully Fetched the Version", { latestVersion: newVersion.toObject() }, true));
     }
     else {
+        const latestVersion = yield Version_1.Version.findById(currentRoom.currentVersionId);
+        if (!latestVersion) {
+            throw new apiError_1.ApiError(400, "Version Not Found");
+        }
         const deltas = yield Delta_1.Delta.find({
-            versionId: latestVersion[0]._id,
+            versionId: currentRoom.currentVersionId,
         })
             .sort({ createdAt: 1 })
             .exec();
@@ -334,7 +333,7 @@ exports.getLatestVersionAndDeltas = (0, asyncHandler_1.asyncHandler)((req, res) 
         }
         return res
             .status(200)
-            .json(new apiResponse_1.ApiResponse(200, "Successfully Fetched the Version", { deltas, latestVersion: latestVersion[0] }, true));
+            .json(new apiResponse_1.ApiResponse(200, "Successfully Fetched the Version", { deltas: deltas.map(delta => delta.toObject()), latestVersion: latestVersion.toObject() }, true));
     }
 }));
 exports.createVersion = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -346,6 +345,9 @@ exports.createVersion = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter
         roomId,
         code,
         language,
+    });
+    yield room_1.Room.findByIdAndUpdate(roomId, {
+        currentVersionId: response._id,
     });
     if (!response) {
         throw new apiError_1.ApiError(400, "Something Went Wrong!");
@@ -391,4 +393,19 @@ exports.getDeltaByVersionId = (0, asyncHandler_1.asyncHandler)((req, res) => __a
     return res
         .status(200)
         .json(new apiResponse_1.ApiResponse(200, "Succefully Fetched Data", deltas, true));
+}));
+exports.updateVersionId = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { versionId, roomId } = req.body;
+    if (!versionId) {
+        throw new apiError_1.ApiError(400, "Empty Version Id");
+    }
+    const response = yield room_1.Room.findByIdAndUpdate(roomId, {
+        currentVersionId: versionId,
+    });
+    if (!response) {
+        throw new apiError_1.ApiError(404, "Version Not Found");
+    }
+    return res
+        .status(200)
+        .json(new apiResponse_1.ApiResponse(200, "Successfully Updated Version", 'ok', true));
 }));

@@ -20,6 +20,10 @@ const RoomSchema = new mongoose_1.default.Schema({
         ref: "User",
         required: [true, "Author id is required"],
     },
+    currentVersionId: {
+        type: mongoose_1.default.Types.ObjectId,
+        ref: "User",
+    },
     participants: {
         type: [
             {

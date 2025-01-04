@@ -2,7 +2,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { User } from "../types/user";
 import Loader from "../components/ui/Loader";
 import useCodeService from "../hooks/useCode";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { File } from "../types/code";
 import { cn, dateConverter } from "../utils/cn";
@@ -23,8 +23,6 @@ import { notify } from "@/utils/notify";
 import { Toaster } from "react-hot-toast";
 import { useAppSelector } from "@/app/hooks";
 const Home = ({ user }: { user: User }) => {
-  const [showDelModal, setShowDelModal] = useState<boolean>(false);
-  const [fileSelected, setFileSelected] = useState<string>("");
   const navigate = useNavigate();
   const { createRoom, joinRoom } = useRoomService();
   const [roomId, setRoomId] = useState<string>("");

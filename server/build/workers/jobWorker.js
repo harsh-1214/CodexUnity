@@ -29,7 +29,7 @@ const worker = new bullmq_1.Worker("jobQueue", (job) => __awaiter(void 0, void 0
     }
     switch (language.toLowerCase()) {
         case 'javascript':
-            image = 'node';
+            image = 'node:alpine';
             command = ['node', '-e', code];
             break;
         case 'java':
@@ -74,10 +74,11 @@ const worker = new bullmq_1.Worker("jobQueue", (job) => __awaiter(void 0, void 0
         yield Promise.race([executionPromise, timeoutPromise]);
         const containerLogs = yield container.logs({ stdout: true, stderr: true });
         const containerResult = containerLogs.toString('utf-8').trim().substring(8);
+        console.log(containerResult);
         data["completedAt"] = new Date();
         data["status"] = "success";
         data["output"] = containerResult;
-        console.log('Successfullt run code');
+        console.log('Successfully run code');
         yield job_1.default.findByIdAndUpdate(data._id, data);
     }
     catch (error) {

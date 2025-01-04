@@ -3,16 +3,12 @@ import { FaPlay, FaRegSave } from "react-icons/fa";
 import { MdOutlineDarkMode,MdLightMode } from "react-icons/md";
 import { notify } from "../utils/notify";
 import { useParams } from "react-router-dom";
-import { MdOutlineMessage } from "react-icons/md";
-// import useRoomService from "../hooks/useRoom";
 
 import { BsThreeDotsVertical } from "react-icons/bs";
 
 import useAxios from '../hooks/useAxios';
-// import { useEffect } from "react";
 import { DeltaInterface, IRoom } from "../types/room";
 import { getCircleStyle } from "@/utils/cn";
-import { HistoryIcon } from "lucide-react";
 import VersionBox from "@/pages/VersionPreview";
 interface Participant {
   username: string;
@@ -105,9 +101,6 @@ const SandBoxNav: React.FC<SandBoxNavProps> = ({
           <FaRegSave fill="#fff"   size={30} />
         </button>
       }
-      {/* <button className="mx-2">
-        <MdOutlineMessage color="white" size={30}/>
-      </button> */}
       {
         applyDeltas && handleSetRestoredCode && <VersionBox applyDeltas={applyDeltas} handleSetRestoredCode = {handleSetRestoredCode} roomId={room?._id}/>
       }

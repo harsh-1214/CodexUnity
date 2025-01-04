@@ -18,4 +18,5 @@ router.post('/create-delta', room_1.createDelta);
 router.post('/get-version-and-deltas', room_1.getLatestVersionAndDeltas);
 router.post('/create-version', room_1.createVersion);
 router.get('/get-delta/:versionId', room_1.getDeltaByVersionId);
+router.post('/update-version', room_1.updateVersionId);
 exports.default = router;

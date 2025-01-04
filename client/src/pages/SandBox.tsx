@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect,useState } from "react";
 import MonacoEditor from "@monaco-editor/react";
 import { Toaster } from "react-hot-toast";
 import { notify } from "../utils/notify";
@@ -6,12 +6,6 @@ import { useAppSelector } from "../app/hooks";
 import SandBoxNav from "../components/SandBoxNav";
 import { useParams } from "react-router-dom";
 import useAxios from "../hooks/useAxios";
-
-// import {
-//   ResizableHandle,
-//   ResizablePanel,
-//   ResizablePanelGroup,
-// } from "@/components/ui/resizable";
 
 const SandBox: React.FC = () => {
   const [output, setOutput] = useState<string>("");
