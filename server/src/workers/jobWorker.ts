@@ -20,23 +20,23 @@ const worker = new Worker("jobQueue",async (job)=>{
     switch (language.toLowerCase()) {
         case 'javascript':
             image = 'node:alpine';
-            command = ['node', '-e', code];
+            command = ['timeout','5','node', '-e', code];
             break;
         case 'java':
             image = 'openjdk';
-            command = ['bash', '-c', `echo '${code}' > Main.java && javac Main.java && java Main`];
+            command = ['bash', '-c', `timeout 5 bash -c echo '${code}' > Main.java && javac Main.java && java Main`];
             break;
         case 'cpp':
             image = 'gcc';
-            command = ['bash', '-c', `echo '${code}' > main.cpp && g++ main.cpp -o main && ./main`];
+            command = ['bash', '-c', `timeout 5 bash -c echo '${code}' > main.cpp && g++ main.cpp -o main && ./main`];
             break;
         case 'python':
             image = 'python:latest';
-            command = ['bash', '-c', `echo '${code}' > script.py && python script.py`];
+            command = ['bash', '-c', `timeout 5 bash -c echo '${code}' > script.py && python script.py`];
             break;
         case 'c':
             image = 'gcc';
-            command = ['bash', '-c', `echo '${code}' > main.c && gcc main.c -o main && ./main`];
+            command = ['bash', '-c', `timeout 5 bash -c echo '${code}' > main.c && gcc main.c -o main && ./main`];
             break;
         default:
             throw new ApiError(400, "Unsupported language");
@@ -48,6 +48,13 @@ const worker = new Worker("jobQueue",async (job)=>{
         AttachStdout: true,
         AttachStderr: true,
         Cmd: command,
+        HostConfig: {
+            AutoRemove: true,
+            PidsLimit: 10,
+            Memory: 512 * 1024 * 1024, // 512 MB
+            NetworkMode: 'none', // Disable network access
+            NanoCpus: 500000000,
+        }
     };
     // const a : Docker.ContainerLogsOptions
     try {
@@ -64,7 +71,7 @@ const worker = new Worker("jobQueue",async (job)=>{
 
         // Wait for either the execution to complete or the timeout to occur
         await Promise.race([executionPromise, timeoutPromise]);
-
+        
         const containerLogs = await container.logs({ stdout: true, stderr: true});
         const containerResult = containerLogs.toString('utf-8').trim().substring(8);
         console.log(containerResult);

@@ -47,20 +47,20 @@ function getCurrentCodeForRoom(roomId) {
 io.on("connection", (socket) => {
   console.log("New connection ", socket.id);
 
-    // socket.on(Actions.JOIN,({roomId,username})=>{
-    //     userSocketMap[socket.id] = username;
-    //     socket.join(roomId);
-    //     const clients = getAllClients(roomId);
-    //     socket.emit(Actions.SYNC_CODE, { code: getCurrentCodeForRoom(roomId) });
-    //     clients.forEach(({socketId})=>{
-    //         io.to(socketId).emit(Actions.JOINED,{
-    //           clients,
-    //           username,
-    //           socketId:socket.id
-    //         })
-    //     })
+    socket.on(Actions.JOIN,({roomId,username})=>{
+        userSocketMap[socket.id] = username;
+        socket.join(roomId);
+        const clients = getAllClients(roomId);
+        socket.emit(Actions.SYNC_CODE, { code: getCurrentCodeForRoom(roomId) });
+        clients.forEach(({socketId})=>{
+            io.to(socketId).emit(Actions.JOINED,{
+              clients,
+              username,
+              socketId:socket.id
+            })
+        })
         
-    // });
+    });
 
     socket.on(Actions.CODE_CHANGED,({code,roomId,user,position})=>{
         currentCodeForRooms[roomId] = code;

@@ -288,7 +288,7 @@ const CollaborativeSandBox: React.FC = () => {
         return;
 
       mutateVersion({roomId,code : debouncedCode.current,language});
-    }, 1000 * 30);
+    }, 1000 * 60 * 30);
 
     return () => clearInterval(intervalId);
   }, []);
@@ -456,6 +456,31 @@ const CollaborativeSandBox: React.FC = () => {
         socketRef.current.on("connect_failed", (err: string) => {
           handleError(err);
         });
+        socketRef.current.emit(Actions.JOIN, {
+          roomId,
+          username: user?.user_name,
+        });
+  
+        socketRef.current.on(
+          Actions.JOINED,
+          ({
+            clients,
+            username,
+          }: {
+            clients: Participant[];
+            username: string;
+            socketId: string;
+          }) => {
+            if (username != user?.user_name) {
+              notify(username + " Joined", true);
+            }
+            setParticipants(clients);
+          }
+        );
+
+        // socketRef.current.on(Actions.SYNC_CODE, ({ code }: { code: string }) => {
+        //   setCode(code);
+        // });
 
         socketRef.current.on(
           Actions.DISCONNECTED,
