@@ -69,8 +69,17 @@
 
 ```bash
 # Clone the repository
-git clone [https://github.com/your-username/devsync.git](https://github.com/your-username/devsync.git)
+git clone [https://github.com/harsh-1214/CodexUnity.git](https://github.com/harsh-1214/CodexUnity.git)
 cd devsync
 
-# Install Dependencies for Client & Server
-npm run install-all
+# Start the Client server
+npm install
+npm run dev
+
+# Start the backend server
+npm install
+npm run dev
+
+# Start the socket server
+npm install
+npm run dev 
