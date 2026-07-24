@@ -1,47 +1,76 @@
-# Full-Stack Web Development Project
+# CodexUnity ⚡💻
 
-This project is a comprehensive full-stack web application built with modern technologies to deliver a robust, scalable, and user-friendly platform. Below is an overview of the key features and the tech stack used.
+> A real-time collaborative code editor and multi-language remote execution engine built with React, Node.js, Socket.io, BullMQ, and Docker.
 
-## Features
-
-### 1. **Frontend Development (ReactJS)**
-- The user interface is developed using **ReactJS**, ensuring a seamless and interactive user experience.
-- Secure user authentication is implemented using **email and password**.
-
-### 2. **Backend Development (NodeJS + MongoDB)**
-- The backend is built with **NodeJS** for managing server-side logic, while **MongoDB** is used for database management.
-- **Express** is used to streamline the routing and middleware system.
-
-### 3. **Multi-Language Code Execution and Docker Integration**
-- Users can write and execute code in five different programming languages: **Java**, **C**, **C++**, **Python**, and **JavaScript**.
-- Each code execution runs inside an isolated **Docker container**, ensuring security and scalability.
-
-### 4. **Message Queue and Job Scheduling**
-- **BullMQ** is used to schedule and manage asynchronous code execution jobs.
-- A robust job queue system enhances application responsiveness and handles large volumes of code execution tasks efficiently.
-
-### 5. **Real-Time Collaboration and WebSocket Integration**
-- A real-time collaboration feature allows multiple participants to code together in a shared environment.
-- Room creation and password protection are implemented using **WebSocket**, ensuring secure and interactive user sessions.
-
-### 6. **Tech Stack Diversity and CI/CD Implementation**
-- **Tanstack Query** is leveraged for efficient data fetching and mutation handling, improving data management throughout the app.
-- **TailwindCSS** is used for responsive, mobile-first design and a modern user interface.
-- Continuous Integration/Continuous Deployment (**CI/CD**) is managed with **Jenkins**, ensuring smooth deployment processes.
-
-## Tech Stack
-
-- **Frontend**: ReactJS, TailwindCSS
-- **Backend**: Node.js, Express, MongoDB
-- **Code Execution**: Docker, BullMQ, WebSockets
-- **CI/CD**: Jenkins
-- **Other Tools**: Tanstack Query, Docker
-
-## Demo
-
-Check out a demo of the application below:
-
+[![React](https://img.shields.io/badge/Frontend-React_v18-61DAFB?style=flat-square&logo=react)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Backend-Node.js-339933?style=flat-square&logo=node.js)](https://nodejs.org/)
+[![Docker](https://img.shields.io/badge/Execution-Dockerized-2496ED?style=flat-square&logo=docker)](https://www.docker.com/)
+[![BullMQ](https://img.shields.io/badge/Queue-BullMQ_%2B_Redis-DC382D?style=flat-square&logo=redis)](https://bullmq.io/)
+[![MongoDB](https://img.shields.io/badge/Database-MongoDB-47A248?style=flat-square&logo=mongodb)](https://www.mongodb.com/)
 
 ---
 
-Feel free to clone this repository and explore the project further. Contributions and feedback are welcome!
+## 📸 System Architecture
+
+![CodexUnity System Architecture](./public/Codexunity_arcitecture.png)
+
+---
+
+## ✨ Core Features
+
+* **Real-Time Collaborative Editing:** Low-latency multi-user code synchronization powered by **Socket.io** and differential text-matching algorithms (`diff-match-patch`).
+* **Multi-Language Isolated Code Execution:** Safe remote execution for **Java, C, C++, Python, and JavaScript** running inside isolated, resource-capped **Docker containers**.
+* **Asynchronous Job Scheduling:** High-throughput task queue managed via **BullMQ** and **Redis** to prevent server bottlenecks during peak compilation loads.
+* **VS Code-Style Editing Experience:** Rich editor interface featuring **Monaco Editor**, panel resizers (`react-resizable-panels`), and Redux Toolkit state management.
+* **Version Control & In-Line Comments:** Real-time user discussions, line-by-line commenting, and project versioning snapshots stored in **MongoDB**.
+* **Automated CI/CD Pipeline:** Integrated **Jenkins** build pipelines ensuring automated testing and deployment.
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend UI** | React 18, Vite, Tailwind CSS, Monaco Editor, Framer Motion |
+| **State & Data** | Redux Toolkit, Redux Persist, TanStack Query (React Query) |
+| **Real-Time Layer** | Socket.io Client & Server, WebSockets |
+| **Core Backend** | Node.js, Express, Mongoose (MongoDB ORM), JWT, Bcrypt |
+| **Job Queue & Workers** | BullMQ, Redis In-Memory Store, Dockerode |
+| **Sandboxed Execution** | Docker Engine (Isolated Linux Worker Containers) |
+| **DevOps & CI/CD** | Jenkins, Docker Hub, ESLint |
+
+---
+
+## ⚡ Engineering Challenges & Solutions
+
+### 1. Secure & Isolated Remote Code Execution
+* **Challenge:** Executing untrusted user code directly on the application server poses severe security risks (e.g., infinite loops, memory leaks, malicious system calls).
+* **Solution:** Orchestrated **Dockerode** to spawn ephemeral Docker containers with restricted CPU memory limits and network access disabled. Executions run in isolated sandboxes and self-destruct after execution or timeout.
+
+### 2. High-Concurrency Compilation Management
+* **Challenge:** Heavy compilation requests for languages like C++ or Java could block the Node.js event loop during peak traffic.
+* **Solution:** Decoupled execution handling from the primary API server using **BullMQ** job queues backed by **Redis**. Code execution tasks are queued asynchronously, processed by background worker processes, and pushed back to the client via Socket.io events.
+
+### 3. Conflict-Free Concurrent Text Editing
+* **Challenge:** Race conditions and out-of-order text edits when multiple users write code in the same file simultaneously.
+* **Solution:** Integrated operational text-differencing algorithms using `diff-match-patch` alongside debounced Socket.io state emissions to ensure smooth cursor tracking and consistent state across all clients.
+
+---
+
+## 🚀 Getting Started Locally
+
+### 1. Prerequisites
+* **Node.js:** `v18.x` or higher
+* **Docker:** Installed and running locally
+* **Redis Server:** Running locally or via Docker (`docker run -p 6379:6379 redis`)
+* **MongoDB:** Connection URI (Local or Atlas)
+
+### 2. Installation
+
+```bash
+# Clone the repository
+git clone [https://github.com/your-username/devsync.git](https://github.com/your-username/devsync.git)
+cd devsync
+
+# Install Dependencies for Client & Server
+npm run install-all
