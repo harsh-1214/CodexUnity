@@ -288,7 +288,7 @@ const CollaborativeSandBox: React.FC = () => {
         return;
 
       mutateVersion({roomId,code : debouncedCode.current,language});
-    }, 1000 * 60 * 30);
+    }, 1000 * 60);
 
     return () => clearInterval(intervalId);
   }, []);

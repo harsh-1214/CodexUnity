@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import {ConnectionOptions} from 'bullmq'
 dotenv.config();
 import mongoose from "mongoose";
 export const connectDB = async()=>{
@@ -11,3 +12,11 @@ export const connectDB = async()=>{
     }
     
 }
+
+export const redisConnectionConfig : ConnectionOptions = {
+  host: process.env.UPSTASH_REDIS_URL || '',
+  port : Number(process.env.REDIS_PORT) || 6379,
+  password: process.env.UPSTASH_REDIS_REST_TOKEN || '',
+  tls: { rejectUnauthorized: false },
+  maxRetriesPerRequest: null,
+};

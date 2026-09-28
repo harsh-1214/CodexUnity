@@ -33,7 +33,7 @@ function App() {
         />
         <Route
           path="sandbox"
-          element={user ? <SandBox /> : <Navigate to="/sandbox" />}
+          element={user ? <SandBox /> : <Navigate to="/login" replace />}
         />
         <Route
           path="sandbox/create"

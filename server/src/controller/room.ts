@@ -106,10 +106,6 @@ export const createComment = asyncHandler(
       selected_text,
     });
 
-    if (!newComment) {
-      throw new ApiError(500, "Something went Wrong while posting Comment");
-    }
-
     return res
       .status(201)
       .json(
@@ -308,10 +304,6 @@ export const createDelta = asyncHandler(async (req: Request, res: Response) => {
     roomId,
   });
 
-  if (!response) {
-    throw new ApiError(500, "Something Went Wrong With Db!");
-  }
-
   res
     .status(201)
     .json(new ApiResponse(201, "Delta Created Successfully", response, true));
@@ -337,10 +329,6 @@ export const getLatestVersionAndDeltas = asyncHandler(
         code: "",
         language: "javascript",
       });
-
-      if (!newVersion) {
-        throw new ApiError(500, "Something Went Wrong With Db!");
-      }
 
       await Room.findByIdAndUpdate(roomId, {
         currentVersionId: newVersion._id,
@@ -403,9 +391,6 @@ export const createVersion = asyncHandler(
       currentVersionId : response._id,
     }) 
 
-    if (!response) {
-      throw new ApiError(400, "Something Went Wrong!");
-    }
 
     return res
       .status(201)
@@ -431,7 +416,7 @@ export const getVersionsByRoomId = asyncHandler(
       .exec();
 
     if (!versions) {
-      throw new ApiError(500, "Something Went Wrong!");
+      throw new ApiError(400, "Room Id is wrong !!");
     }
 
     return res

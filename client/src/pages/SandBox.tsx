@@ -62,6 +62,7 @@ const SandBox: React.FC = () => {
             return;
           }
           clearInterval(intervalId);
+          console.log(output);
           setOutput(output);
           const startedAt1: Date = new Date(startedAt);
           const completedAt1: Date = new Date(completedAt);

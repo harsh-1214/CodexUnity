@@ -7,7 +7,7 @@ class ApiResponse {
     statusCode: number,
     message: string,
     data: any,
-    success: boolean
+    success: boolean,
   ) {
     this.statusCode = statusCode;
     this.message = message;
@@ -15,4 +15,4 @@ class ApiResponse {
     this.success = success;
   }
 }
-export {ApiResponse}
+export { ApiResponse };

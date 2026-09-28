@@ -1,7 +1,7 @@
 import { Disclosure } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
-import { useAppDispatch,useAppSelector } from "../app/hooks";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { logout } from "../app/slices/authSlice";
 
 const location = window.location.pathname;
@@ -23,7 +23,9 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 export default function Example() {
-  const token = useAppSelector((state)=>{return state.auth.token});
+  const token = useAppSelector((state) => {
+    return state.auth.token;
+  });
   const dispatch = useAppDispatch();
   return (
     <Disclosure as="nav" className="bg-slate-900">
@@ -45,7 +47,9 @@ export default function Example() {
               </div>
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                 <div className="flex flex-shrink-0 items-center">
-                 <Link to={'/'} className="text-sm text-bold text-[#6366F1]">CodexUnity</Link>
+                  <Link to={"/"} className="text-sm text-bold text-[#6366F1]">
+                    CodexUnity
+                  </Link>
                 </div>
                 <div className="hidden sm:ml-6 sm:block">
                   <div className="flex space-x-4">
@@ -68,20 +72,19 @@ export default function Example() {
                 </div>
               </div>
               <div className="absolute inset-y-0 right-0 flex items-center  sm:static sm:inset-auto sm:ml-6 sm:pr-0">
- {
-token &&
-
-                <div>
-                  <button
-                    onClick={()=>{
-                      dispatch(logout())
-                    }}
-                    type="button"
-                    className="text-red-500 hover:text-white border border-red-500 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-3 py-1.5 text-center me-2 mb-2 dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900"
-                  >
-                    Sign Out
-                  </button>
-                </div>}
+                {token && (
+                  <div>
+                    <button
+                      onClick={() => {
+                        dispatch(logout());
+                      }}
+                      type="button"
+                      className="text-red-500 hover:text-white border border-red-500 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-3 py-1.5 text-center me-2 mb-2 dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -97,7 +100,7 @@ token &&
                     item.current
                       ? "bg-gray-900 text-white"
                       : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                    "block rounded-md px-3 py-2 text-base font-medium"
+                    "block rounded-md px-3 py-2 text-base font-medium",
                   )}
                   aria-current={item.current ? "page" : undefined}
                 >

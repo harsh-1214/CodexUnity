@@ -11,7 +11,7 @@ type FileBoxProps = Omit<Partial<File>, 'setShowDelModal'> & {
 };
 const FileBox = ({ _id, title, language,createdAt,setShowDelModal,setFileSelected}: FileBoxProps) => {
   const user = useAppSelector((state) => {
-    return state.auth.user;
+    return state?.auth.user;
   });
   const getImageSrc = (language: string) => {
     return `${language.toLowerCase()}.png`;

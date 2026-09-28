@@ -7,15 +7,13 @@ import Job from "../model/job";
 import {Queue, tryCatch} from 'bullmq';
 import { SandBox } from "../model/sandbox";
 import dotenv from 'dotenv'
+import {redisConnectionConfig} from '../db/index'
 
 dotenv.config();
 const inst = process.env.ENV;
 console.log(inst)
 const jobQueue = new Queue("jobQueue",{
-    connection:{
-        host: inst==="dev"?"0.0.0.0":"redis",
-        port:6379
-    }
+    connection: redisConnectionConfig
 });
 export const executeCode = asyncHandler(async (req: CustomRequest, res: Response) => {
     const { code,language } = req.body;

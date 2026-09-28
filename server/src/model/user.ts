@@ -25,7 +25,7 @@ const UserSchema = new Schema<IUser>({
     required: [true, "Email is required"],
     unique: true,
     trim: true,
-    lowercase: true,
+    lowercase: true, // should not be
     match: [
       /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{1,7}$/,
       "Please enter a valid email address",

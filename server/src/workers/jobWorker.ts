@@ -3,6 +3,7 @@ import { ApiError } from "../utils/apiError";
 import Docker from 'dockerode';
 import Job, {IJob} from "../model/job";
 import dotenv from 'dotenv'
+import { redisConnectionConfig } from '../db';
 
 
 dotenv.config();
@@ -88,9 +89,5 @@ const worker = new Worker("jobQueue",async (job)=>{
         throw new ApiError(500,JSON.stringify(error.message));
     }
 },{
-    connection:{
-        
-        host: process.env.ENV==="dev"?"0.0.0.0":"redis",
-        port:6379
-    }
+    connection: redisConnectionConfig
 } ) 
