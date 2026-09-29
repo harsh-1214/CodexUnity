@@ -24,9 +24,9 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import {  stringToColor } from "@/utils/cn";
+import { stringToColor } from "@/utils/cn";
 import { TiTick } from "react-icons/ti";
-import {MessageCirclePlusIcon, SendHorizontal } from "lucide-react";
+import { MessageCirclePlusIcon, SendHorizontal } from "lucide-react";
 import { MdDelete } from "react-icons/md";
 import MessageBox from "./MessageBox";
 
@@ -34,7 +34,6 @@ interface Participant {
   username: string;
   socketId: string;
 }
-
 
 const CollaborativeSandBox: React.FC = () => {
   const [output, setOutput] = useState<string>("");
@@ -45,6 +44,7 @@ const CollaborativeSandBox: React.FC = () => {
   const [running, setRunning] = useState<boolean>(false);
   const [runTime, setRunTime] = useState<number>(0);
   const [isAllowed, setIsAllowed] = useState<boolean>(false);
+  const [isInitializing, setIsInitializing] = useState<boolean>(true);
   const [room, setRoom] = useState<IRoom | undefined>(undefined);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -58,7 +58,7 @@ const CollaborativeSandBox: React.FC = () => {
   const [selectedText, setSelectedText] = useState("");
 
   const [selectedRange, setSelectedRange] = useState<monaco.IRange | null>(
-    null
+    null,
   );
   const [iconPosition, setIconPosition] = useState<{
     top: number;
@@ -81,7 +81,7 @@ const CollaborativeSandBox: React.FC = () => {
   // Current Debounced code of editor
   const debouncedCode = useRef<string>("");
   const [previousCodeForDelta, setPreviousCodeForDelta] = useState("");
-  const [,setTriggerReRender] = useState(false);
+  const [, setTriggerReRender] = useState(false);
   const previousCodeForVersion = useRef<string>("");
   const [currentVersionId, setCurrentVersionId] = useState("");
   const [db, setDb] = useState<IDBDatabase>();
@@ -93,12 +93,12 @@ const CollaborativeSandBox: React.FC = () => {
       setTriggerReRender((prev) => !prev);
     },
     // delay in ms
-    1000
+    1000,
   );
 
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
-  function syncCode(roomId : string,versionId : string) {
+  function syncCode(roomId: string, versionId: string) {
     if (typeof window == undefined) return;
 
     return new Promise((resolve, reject) => {
@@ -110,41 +110,44 @@ const CollaborativeSandBox: React.FC = () => {
         const transaction = db.transaction(["documents"], "readwrite");
         const store = transaction.objectStore("documents");
         const getAllRequest = store.getAll();
-         
-        getAllRequest.onsuccess = async() => {
+
+        getAllRequest.onsuccess = async () => {
           const documents = getAllRequest.result;
-          const myDocuments = documents.filter( (val) => val.roomId === roomId).sort( (a,b) => {
-            const date1= new Date(a.createdAt) 
-            const date2 =  new Date(b.createdAt);
-            return date1.getTime() - date2.getTime();
-          });
+          const myDocuments = documents
+            .filter((val) => val.roomId === roomId)
+            .sort((a, b) => {
+              const date1 = new Date(a.createdAt);
+              const date2 = new Date(b.createdAt);
+              return date1.getTime() - date2.getTime();
+            });
           // resolve();
           // Send documents to the server
-          for(const deltas of myDocuments){
+          for (const deltas of myDocuments) {
             try {
-    
               const response = await createDelta({
                 diffs: deltas.diffs,
                 versionId,
                 roomId,
               });
-    
+
               if (!!response) {
                 // Open a new transaction to delete the document
-                const deleteTransaction = db.transaction(["documents"], "readwrite");
+                const deleteTransaction = db.transaction(
+                  ["documents"],
+                  "readwrite",
+                );
                 const deleteStore = deleteTransaction.objectStore("documents");
                 deleteStore.delete(deltas.id);
-                deleteTransaction.oncomplete = () => {
-                };
+                deleteTransaction.oncomplete = () => {};
               } else {
-                console.log('Failed To Syncing Documents');
+                console.log("Failed To Syncing Documents");
               }
             } catch (err) {
-              console.error('Error In Syncing Documents !!', err);
+              console.error("Error In Syncing Documents !!", err);
             }
           }
           setPreviousCodeForDelta(debouncedCode.current ?? "");
-          resolve('ok');
+          resolve("ok");
         };
 
         getAllRequest.onerror = () => {
@@ -178,9 +181,9 @@ const CollaborativeSandBox: React.FC = () => {
       setIsAddingComment(false);
     },
   });
-  const { mutate : mutateVersion } = useMutation({
+  const { mutate: mutateVersion } = useMutation({
     mutationFn: createVersion,
-    onSuccess( data ) {
+    onSuccess(data) {
       queryClient.invalidateQueries({
         queryKey: ["versions", { roomId }],
       });
@@ -221,9 +224,8 @@ const CollaborativeSandBox: React.FC = () => {
       if (!roomId) return;
       // deltas should be in ascending order, means latest delta should be at last,
       try {
-        const { latestVersion, deltas } = await loadIntialVersionAndDeltas(
-          roomId
-        );
+        const { latestVersion, deltas } =
+          await loadIntialVersionAndDeltas(roomId);
         if (!latestVersion) {
           // Room Id is wrong
           return;
@@ -240,7 +242,10 @@ const CollaborativeSandBox: React.FC = () => {
 
         request.onupgradeneeded = (event) => {
           const db = (event.target as IDBOpenDBRequest).result;
-          db.createObjectStore("documents", { keyPath: "id" ,autoIncrement : true});
+          db.createObjectStore("documents", {
+            keyPath: "id",
+            autoIncrement: true,
+          });
         };
 
         request.onsuccess = (event) => {
@@ -261,8 +266,8 @@ const CollaborativeSandBox: React.FC = () => {
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      if(!roomId) return;
-      syncCode(roomId,currentVersionId);
+      if (!roomId) return;
+      syncCode(roomId, currentVersionId);
     };
     const handleOffline = () => setIsOnline(false);
     window.addEventListener("online", handleOnline);
@@ -272,7 +277,7 @@ const CollaborativeSandBox: React.FC = () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, [currentVersionId,roomId]);
+  }, [currentVersionId, roomId]);
 
   useEffect(() => {
     const intervalId = setInterval(async () => {
@@ -287,7 +292,7 @@ const CollaborativeSandBox: React.FC = () => {
       )
         return;
 
-      mutateVersion({roomId,code : debouncedCode.current,language});
+      mutateVersion({ roomId, code: debouncedCode.current, language });
     }, 1000 * 60);
 
     return () => clearInterval(intervalId);
@@ -306,11 +311,14 @@ const CollaborativeSandBox: React.FC = () => {
     if (!roomId) return;
 
     (async () => {
-
-      if ( !debouncedCode.current || debouncedCode.current === previousCodeForDelta) return;
+      if (
+        !debouncedCode.current ||
+        debouncedCode.current === previousCodeForDelta
+      )
+        return;
       const diffs = calculateDiffs(
         previousCodeForDelta,
-        debouncedCode.current ?? ""
+        debouncedCode.current ?? "",
       );
 
       // Save Deltas in IndexedDb If they are offline
@@ -319,17 +327,15 @@ const CollaborativeSandBox: React.FC = () => {
 
         const transaction = db.transaction(["documents"], "readwrite");
         const store = transaction.objectStore("documents");
-        store.put({ roomId, diffs, createdAt : new Date() });
+        store.put({ roomId, diffs, createdAt: new Date() });
         setPreviousCodeForDelta(debouncedCode.current ?? "");
 
-        transaction.oncomplete = () => {
-        };
+        transaction.oncomplete = () => {};
 
         transaction.onerror = () => {
           console.error("Error saving document");
         };
-      }
-      else{
+      } else {
         // Maybe we should Create new version if there is no version,
         // done
         await createDelta({
@@ -339,15 +345,12 @@ const CollaborativeSandBox: React.FC = () => {
         });
         setPreviousCodeForDelta(debouncedCode.current ?? "");
       }
-
-      
-    })().catch( () => {
-      console.error('Something Went Wrong in Creating Deltas !!');
+    })().catch(() => {
+      console.error("Something Went Wrong in Creating Deltas !!");
     });
   }, [debouncedCode.current, roomId]);
 
   useEffect(() => {
-
     // Add Comment Button when User selects the text
     const editor = editorRef.current;
     if (!editor) return;
@@ -361,11 +364,11 @@ const CollaborativeSandBox: React.FC = () => {
         selection.startLineNumber,
         selection.startColumn,
         selection.endLineNumber,
-        selection.endColumn
+        selection.endColumn,
       );
       if (selectedText) {
         const startPosition = editor.getScrolledVisiblePosition(
-          selection.getStartPosition()
+          selection.getStartPosition(),
         );
         if (!startPosition) return;
         setIconPosition({
@@ -381,7 +384,6 @@ const CollaborativeSandBox: React.FC = () => {
         setSelectedText("");
         setIsAddingComment(false);
       }
-
     });
 
     return () => disposable.dispose();
@@ -460,7 +462,7 @@ const CollaborativeSandBox: React.FC = () => {
           roomId,
           username: user?.user_name,
         });
-  
+
         socketRef.current.on(
           Actions.JOINED,
           ({
@@ -475,7 +477,7 @@ const CollaborativeSandBox: React.FC = () => {
               notify(username + " Joined", true);
             }
             setParticipants(clients);
-          }
+          },
         );
 
         // socketRef.current.on(Actions.SYNC_CODE, ({ code }: { code: string }) => {
@@ -489,7 +491,7 @@ const CollaborativeSandBox: React.FC = () => {
             setParticipants((prev) => {
               return prev.filter((e) => e.socketId != socketId);
             });
-          }
+          },
         );
       } catch (error: any) {
         notify(error.message, false);
@@ -497,10 +499,13 @@ const CollaborativeSandBox: React.FC = () => {
           navigate("/login");
         }, 1000);
         return;
+      } finally {
+        // Add this finally block to turn off the loading state
+        setIsInitializing(false);
       }
 
       const handleError = (err: string) => {
-        console.error(err)
+        console.error(err);
         return <ErrorBoundary />;
       };
     };
@@ -521,7 +526,7 @@ const CollaborativeSandBox: React.FC = () => {
         Actions.CODE_CHANGED,
         ({ code }: { code: string; user: User; position: any }) => {
           setCode(code);
-        }
+        },
       );
     }
     return () => {
@@ -576,6 +581,34 @@ const CollaborativeSandBox: React.FC = () => {
     }
   };
 
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen w-full bg-[#1E1E1E] flex flex-col overflow-hidden">
+        {/* 1. Mock SandBoxNav (Fading) */}
+        <div className="h-[60px] w-full bg-[#2E2E2E] animate-pulse border-b border-gray-700"></div>
+
+        <div className="flex w-full">
+          {/* 2. Mock Editor & Output Area (70vw) */}
+          <div className="w-[70vw] min-h-[80vh] flex flex-col border-r border-gray-700">
+            {/* Editor portion (75%) */}
+            <div className="h-[75%] bg-[#1E1E1E] animate-pulse"></div>
+            {/* Output terminal portion (25%) */}
+            <div className="h-[25%] bg-black animate-pulse border-t border-gray-700"></div>
+          </div>
+
+          {/* 3. Mock Comments Sidebar (30vw) */}
+          <div className="w-[30vw] min-h-[80vh] bg-[#1E1E1E] animate-pulse p-4">
+            {/* Mocking the "Comments and Suggestions" header */}
+            <div className="h-8 w-3/4 bg-[#2E2E2E] rounded mb-6"></div>
+            {/* Mocking a few empty comments */}
+            <div className="h-20 w-full bg-[#2E2E2E] rounded mb-4"></div>
+            <div className="h-20 w-full bg-[#2E2E2E] rounded mb-4"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!isAllowed) {
     return <ErrorBoundary />;
   }
@@ -613,7 +646,7 @@ const CollaborativeSandBox: React.FC = () => {
     e: React.FormEvent<HTMLFormElement>,
     parent_id: string,
     selectedRange: IRange,
-    selected_text: string
+    selected_text: string,
   ) => {
     e.preventDefault();
 
@@ -675,10 +708,9 @@ const CollaborativeSandBox: React.FC = () => {
     }
   };
 
-  function handleSetRestoredCode(code: string,versionId : string) {
-    
-    if(!roomId){
-      notify("Please Join a Room",false);
+  function handleSetRestoredCode(code: string, versionId: string) {
+    if (!roomId) {
+      notify("Please Join a Room", false);
       return;
     }
 
@@ -687,9 +719,8 @@ const CollaborativeSandBox: React.FC = () => {
     previousCodeForVersion.current = code;
 
     // Updating Version ID
-    updateVersionId({versionId,roomId});
+    updateVersionId({ versionId, roomId });
     setCurrentVersionId(versionId);
-
   }
 
   // const handleVersionClick = (versionId: string, code: string) => {
@@ -750,6 +781,9 @@ const CollaborativeSandBox: React.FC = () => {
         >
           <ResizablePanel defaultSize={75}>
             <MonacoEditor
+              loading={
+                <div className="h-full w-full bg-[#1E1E1E] animate-pulse"></div>
+              }
               onChange={(e) => {
                 // console.log(editorRef.current.getPosition())
                 if (!e) return;
@@ -799,7 +833,7 @@ const CollaborativeSandBox: React.FC = () => {
                       <div
                         title={user?.user_name}
                         className={`flex items-center justify-center w-10 h-10 text-white shadow-xl rounded-full bg-[${stringToColor(
-                          user?.user_name ?? "guest"
+                          user?.user_name ?? "guest",
                         )}]`}
                       >
                         {user?.user_name.charAt(0).toUpperCase()}
@@ -894,7 +928,7 @@ const CollaborativeSandBox: React.FC = () => {
                           e,
                           comment._id,
                           comment.selected_range,
-                          comment.selected_text
+                          comment.selected_text,
                         )
                       }
                     >

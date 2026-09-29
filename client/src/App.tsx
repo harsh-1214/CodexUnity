@@ -13,8 +13,6 @@ import SignUp from "./pages/SignUp";
 import Layout from "./components/Layout";
 import Hello from "./pages/Hello";
 import SandBox from "./pages/SandBox";
-import CreateFile from "./pages/CreateFile";
-import JoinRoom from "./pages/JoinRoom";
 import CollabarativeSandBox from "./pages/CollabarativeSandBox";
 import ErrorBoundary from "./components/Error";
 

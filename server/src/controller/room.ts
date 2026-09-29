@@ -59,26 +59,31 @@ export const joinRoom = asyncHandler(
     const user = req.user;
     const userId = user!._id;
     const userName = user!.user_name;
-    if (!name || !password || !userId || !userName)
-      throw new ApiError(400, " Values missing required");
-    const userFound = await User.findById(userId);
 
-    if (!userFound) {
-      throw new ApiError(404, "User not found");
+    if (!name || !password || !userId || !userName) {
+      throw new ApiError(400, "Values missing required");
     }
-    const room = await Room.findOne({ name });
 
+    // Find the room first to check credentials
+    const room = await Room.findOne({ name });
     if (!room || room.password !== password) {
       throw new ApiError(400, "Invalid credentials");
     }
 
-    const p = room.participants;
-    p.push({ id: userId, name: userName });
-    room.participants = p;
-    await Room.findByIdAndUpdate(room._id, room);
+    // Use $addToSet (or $push) to atomically update the array
+    const updatedRoom = await Room.findByIdAndUpdate(
+      room._id,
+      {
+        $addToSet: {
+          participants: { id: userId, name: userName }
+        }
+      },
+      { new: true } // Returns the updated document
+    );
+
     return res
       .status(201)
-      .json(new ApiResponse(201, "Room Joined", { room }, true));
+      .json(new ApiResponse(201, "Room Joined", { room: updatedRoom }, true));
   }
 );
 
