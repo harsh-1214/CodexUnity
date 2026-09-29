@@ -7,49 +7,49 @@ export default defineConfig({
   base: "/",
   plugins: [
     react(),
-    VitePWA({
-      // scope : '/',
-      registerType: "autoUpdate",
-      devOptions : {
-        enabled : true,
-      },
-      strategies: "generateSW",
-      workbox: {
-        maximumFileSizeToCacheInBytes : 5 * 1024 * 1024,
-        runtimeCaching: [
-          {
-            urlPattern: /^http:\/\/localhost:8000\//,
-            // urlPattern : /^http:\/\/localhost:(8000|12|21|5|23)\//,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "api-cache",
-              networkTimeoutSeconds: 10,
-              expiration: { maxEntries: 50, maxAgeSeconds: 5 * 60 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            urlPattern: ({ request }) => request.destination === 'document' || request.destination === 'script' || request.destination === 'style' || request.destination === 'font',
-            handler: "StaleWhileRevalidate",
-            options: {
-              cacheName: "frontend-cache",
-              expiration: { maxEntries: 500, maxAgeSeconds: 24 * 60 * 60 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif)$/,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "image-cache",
-              expiration: { maxEntries: 50, maxAgeSeconds: 30 * 24 * 60 * 60 },
-            },
-          },
-        ],
-      },
-      manifest: false,
-      // Disable manifest generation if you don't need a PWA
-    }),
+    // VitePWA({
+    //   // scope : '/',
+    //   registerType: "autoUpdate",
+    //   devOptions : {
+    //     enabled : true,
+    //   },
+    //   strategies: "generateSW",
+    //   workbox: {
+    //     maximumFileSizeToCacheInBytes : 5 * 1024 * 1024,
+    //     runtimeCaching: [
+    //       {
+    //         urlPattern: /^http:\/\/localhost:8000\//,
+    //         // urlPattern : /^http:\/\/localhost:(8000|12|21|5|23)\//,
+    //         handler: "NetworkFirst",
+    //         options: {
+    //           cacheName: "api-cache",
+    //           networkTimeoutSeconds: 10,
+    //           expiration: { maxEntries: 50, maxAgeSeconds: 5 * 60 },
+    //           cacheableResponse: { statuses: [0, 200] },
+    //         },
+    //       },
+    //       {
+    //         urlPattern: ({ request }) => request.destination === 'document' || request.destination === 'script' || request.destination === 'style' || request.destination === 'font',
+    //         handler: "StaleWhileRevalidate",
+    //         options: {
+    //           cacheName: "frontend-cache",
+    //           expiration: { maxEntries: 500, maxAgeSeconds: 24 * 60 * 60 },
+    //           cacheableResponse: { statuses: [0, 200] },
+    //         },
+    //       },
+    //       {
+    //         urlPattern: /\.(?:png|jpg|jpeg|svg|gif)$/,
+    //         handler: "CacheFirst",
+    //         options: {
+    //           cacheName: "image-cache",
+    //           expiration: { maxEntries: 50, maxAgeSeconds: 30 * 24 * 60 * 60 },
+    //         },
+    //       },
+    //     ],
+    //   },
+    //   manifest: false,
+    //   // Disable manifest generation if you don't need a PWA
+    // }),
   ],
   resolve: {
     alias: {

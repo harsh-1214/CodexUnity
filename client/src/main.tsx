@@ -23,15 +23,3 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   </QueryClientProvider>
 )
 
-// const updateSW = registerSW({
-//   onNeedRefresh() {
-//     console.log('Service Worker needs refresh');
-//   },
-//   onOfflineReady() {
-//     console.log('Service Worker is ready for offline use');
-//   },
-// });
-
-// register();
-// registerSync();
-

@@ -93,7 +93,7 @@ const CollaborativeSandBox: React.FC = () => {
       setTriggerReRender((prev) => !prev);
     },
     // delay in ms
-    1000 * 10
+    1000
   );
 
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -111,7 +111,7 @@ const CollaborativeSandBox: React.FC = () => {
         const store = transaction.objectStore("documents");
         const getAllRequest = store.getAll();
          
-        getAllRequest.onsuccess = () => {
+        getAllRequest.onsuccess = async() => {
           const documents = getAllRequest.result;
           const myDocuments = documents.filter( (val) => val.roomId === roomId).sort( (a,b) => {
             const date1= new Date(a.createdAt) 
@@ -120,7 +120,7 @@ const CollaborativeSandBox: React.FC = () => {
           });
           // resolve();
           // Send documents to the server
-          myDocuments.forEach(async (deltas) => {
+          for(const deltas of myDocuments){
             try {
     
               const response = await createDelta({
@@ -142,7 +142,7 @@ const CollaborativeSandBox: React.FC = () => {
             } catch (err) {
               console.error('Error In Syncing Documents !!', err);
             }
-          });
+          }
           setPreviousCodeForDelta(debouncedCode.current ?? "");
           resolve('ok');
         };
