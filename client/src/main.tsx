@@ -12,7 +12,7 @@ import {
 
 export const queryClient = new QueryClient()
 
-let persister = persistStore(store);
+const persister = persistStore(store);
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <QueryClientProvider client={queryClient}>
     <Provider store={store}>

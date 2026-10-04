@@ -4,7 +4,6 @@ import authReducer from "./slices/authSlice";
 import storage from "redux-persist/lib/storage";
 import {
   persistReducer,
-  persistStore,
   FLUSH,
   REHYDRATE,
   PAUSE,

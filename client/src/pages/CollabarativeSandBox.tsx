@@ -130,7 +130,7 @@ const CollaborativeSandBox: React.FC = () => {
                 roomId,
               });
 
-              if (!!response) {
+              if (response) {
                 // Open a new transaction to delete the document
                 const deleteTransaction = db.transaction(
                   ["documents"],
@@ -398,8 +398,8 @@ const CollaborativeSandBox: React.FC = () => {
       if (!editorRef.current) return;
 
       const newDecorations = comments.flatMap((val) => {
-        let range = val.selected_range;
-        let text = editorRef.current?.getModel()?.getValueInRange(range);
+        const range = val.selected_range;
+        const text = editorRef.current?.getModel()?.getValueInRange(range);
 
         if (!text) return [];
 
