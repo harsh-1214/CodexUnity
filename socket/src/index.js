@@ -9,8 +9,6 @@ const Actions = {
   JOINED:"joined",
   DISCONNECTED:"disconnected",
   CODE_CHANGED:"code-change",
-  SYNC_CODE:"sync-code",
-  LEAVE:"leave"
 }
 
 dotenv.config();
@@ -31,7 +29,6 @@ app.get('/socket', (req, res) => {
 });
 
 const userSocketMap={}
-const currentCodeForRooms = {};
 function getAllClients(roomId){
   return Array.from(io.sockets.adapter.rooms.get(roomId)||[]).map((socketId)=>{
     return {
@@ -63,7 +60,6 @@ io.on("connection", (socket) => {
     });
 
     socket.on(Actions.CODE_CHANGED,({code,roomId,user,position})=>{
-        currentCodeForRooms[roomId] = code;
        socket.in(roomId).emit(Actions.CODE_CHANGED,{code,user,position});
     })
   

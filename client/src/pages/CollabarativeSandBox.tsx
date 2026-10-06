@@ -16,7 +16,7 @@ import diff_match_patch from "diff-match-patch";
 import { DeltaInterface, IRange, IRoom } from "../types/room";
 import { initSocket } from "../sockets/initSocket";
 import { Actions } from "../sockets/Actions";
-import ErrorBoundary from "../components/Error";
+import ErrorBoundary from "../components/NotFound";
 import { User } from "../types/user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -195,13 +195,6 @@ const CollaborativeSandBox: React.FC = () => {
   const socketRef = useRef<any>(null);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
-  // useEffect( () => {
-
-  //   // Filter aou comments which are not in context,
-
-  // },[comments])
-
-  // fetch the intial code
 
   function applyDeltas(initialcode: string, deltas: DeltaInterface[]) {
     let content = initialcode;
@@ -296,7 +289,7 @@ const CollaborativeSandBox: React.FC = () => {
     }, 1000 * 60);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [roomId,debouncedCode.current,language]);
 
   const calculateDiffs = (previousContent: string, currentContent: string) => {
     const dmp = new diff_match_patch();
@@ -722,15 +715,6 @@ const CollaborativeSandBox: React.FC = () => {
     updateVersionId({ versionId, roomId });
     setCurrentVersionId(versionId);
   }
-
-  // const handleVersionClick = (versionId: string, code: string) => {
-  //   const { deltas } = getDeltas({versionId});
-  //   const latestCode = applyDeltas(code, deltas);
-  //   setCode(latestCode);
-  // };
-
-  // if (isCommentLoading) return <>Loding...</>;
-  // if (isCommentError) return <>Error...</>;
 
   return (
     <>
