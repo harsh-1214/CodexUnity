@@ -22,6 +22,9 @@ import useRoomService from "@/hooks/useRoom";
 import { notify } from "@/utils/notify";
 import { Toaster } from "react-hot-toast";
 import { useAppSelector } from "@/app/hooks";
+
+
+
 const Home = ({ user }: { user: User }) => {
   const navigate = useNavigate();
   const { createRoom, joinRoom } = useRoomService();
@@ -174,7 +177,6 @@ const Home = ({ user }: { user: User }) => {
                           </p>
                         </div>
                       </Link>
-                      {/* <DeleteModal roomId={id} /> */}
                     </li>
                   ))}
               </ul>
@@ -227,17 +229,7 @@ export function DialogComponentCreateFile({
               className="col-span-3"
             />
           </div>
-          {/* <div className="grid grid-cols-4 items-center gap-4 ">
-            <Label htmlFor="username" className="text-right">
-              Password
-            </Label>
-            <Input
-              id="password"
-              value={password}
-              onChange={(ev) => setPassword(ev.target.value)}
-              className="col-span-3"
-            />
-          </div> */}
+          
         </div>
         <DialogFooter className="">
           <Button
@@ -250,16 +242,6 @@ export function DialogComponentCreateFile({
             {/* {isCreating ? "Create Room" : "Join Room"} */}
             Next
           </Button>
-          {/* <Button variant={'outline'}>Join Room</Button> */}
-          {/* <div className="text-sm text-center p-2">
-            { {isCreating ? "Already have a Room ? " : "Don't have a room ? "} }
-            <button
-              className="underline"
-              onClick={() => setIsCreating((prev) => !prev)}
-            >
-              {!isCreating ? "Create Room" : "Join Room"}
-            </button>
-          </div> */}
         </DialogFooter>
       </DialogContent>
     </Dialog>

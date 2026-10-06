@@ -4,7 +4,7 @@ import { useAppSelector } from "../app/hooks";
 import { MdNavigateNext } from "react-icons/md";
 import {format} from 'timeago.js'
 import { FaTrash } from "react-icons/fa";
-import ErrorBoundary from "./Error";
+import ErrorBoundary from "./NotFound";
 type FileBoxProps = Omit<Partial<File>, 'setShowDelModal'> & {
   setShowDelModal: React.Dispatch<React.SetStateAction<boolean>>,
   setFileSelected: React.Dispatch<React.SetStateAction<string>>

@@ -14,7 +14,8 @@ import Layout from "./components/Layout";
 import Hello from "./pages/Hello";
 import SandBox from "./pages/SandBox";
 import CollabarativeSandBox from "./pages/CollabarativeSandBox";
-import ErrorBoundary from "./components/Error";
+import NotFoundPage from "./components/NotFound";
+import InternalErrorPage from "./components/ErrorBoundary";
 
 // 1. Create a wrapper for routes that require a user
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -40,7 +41,7 @@ const IndexRoute = () => {
 const router = createBrowserRouter(
   createRoutesFromElements(
     // added errorElement
-    <Route path="/" element={<Layout />} errorElement={<ErrorBoundary />}>
+    <Route path="/" element={<Layout />} errorElement={<InternalErrorPage />}>
       <Route index element={<IndexRoute />} />
 
       <Route path="signin" element={<PublicRoute><SignIn /></PublicRoute>} />
@@ -49,8 +50,7 @@ const router = createBrowserRouter(
       <Route path="sandbox/:userId/:fileId" element={<ProtectedRoute><SandBox /></ProtectedRoute>} />
       <Route path="collab/:roomId" element={<ProtectedRoute><CollabarativeSandBox /></ProtectedRoute>} />
 
-      {/* <Route path="*" element={<ErrorBoundary />} /> */}
-      <Route path="*" element={<div>404 - Page Not Found</div>} />
+      <Route path="*" element={<NotFoundPage />} />
     </Route>
   )
 );
