@@ -38,11 +38,6 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           {token && (
             <>
-              {/* Online / Ready status indicator */}
-              <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Connected</span>
-              </div>
 
               <button
                 onClick={() => dispatch(logout())}

@@ -37,9 +37,6 @@ function getAllClients(roomId){
     }
   })
 }
-function getCurrentCodeForRoom(roomId) {
-  return currentCodeForRooms[roomId] || "";
-}
 
 io.on("connection", (socket) => {
   console.log("New connection ", socket.id);
@@ -48,7 +45,6 @@ io.on("connection", (socket) => {
         userSocketMap[socket.id] = username;
         socket.join(roomId);
         const clients = getAllClients(roomId);
-        // socket.emit(Actions.SYNC_CODE, { code: getCurrentCodeForRoom(roomId) });
         clients.forEach(({socketId})=>{
             io.to(socketId).emit(Actions.JOINED,{
               clients,
