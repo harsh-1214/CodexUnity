@@ -14,32 +14,25 @@ import { Version } from "../model/Version";
 export const createRoom = asyncHandler(
   async (req: CustomRequest, res: Response) => {
     const { name, password } = req.body;
-    const author = req!.user;
-    const authorId = author!._id;
-    const authorName = author!.user_name;
-    if (!name || !password || !authorId || !authorName)
+    const author = req.user; // Removed redundant non-null assertions
+
+    if (!name || !password || !author?._id || !author?.user_name) {
       throw new ApiError(400, "All fields are required");
-    const existedRoom = await Room.findOne({ name });
-    if (existedRoom)
-      throw new ApiError(409, "Room with this room name already exists");
-    // const file = await SandBox.create({ userId: authorId, title: name });
-    // if (!file)
-      // throw new ApiError(500, "Something went wrong while creating a file");
-    const p = [];
-    p.push({ id: authorId, name: authorName });
+    }
+
+    // 1. Single DB call: Create room directly
+    // 2. Direct array initialization (no need for push or $addToSet during creation)
     const newRoom = await Room.create({
       name,
       password,
-      author: authorId,
-      // sandbox: file,
-      participants: p,
+      author: author._id,
+      participants: [{ id: author._id, name: author.user_name }],
     });
-    if (!newRoom)
-      throw new ApiError(500, "Something went wrong while creating a room");
+
     return res
       .status(201)
       .json(new ApiResponse(201, "Room created", { room: newRoom }, true));
-  }
+  },
 );
 
 export const getRoomById = asyncHandler(async (req: Request, res: Response) => {
@@ -75,16 +68,16 @@ export const joinRoom = asyncHandler(
       room._id,
       {
         $addToSet: {
-          participants: { id: userId, name: userName }
-        }
+          participants: { id: userId, name: userName },
+        },
       },
-      { new: true } // Returns the updated document
+      { new: true }, // Returns the updated document
     );
 
     return res
       .status(201)
       .json(new ApiResponse(201, "Room Joined", { room: updatedRoom }, true));
-  }
+  },
 );
 
 export const createComment = asyncHandler(
@@ -114,9 +107,9 @@ export const createComment = asyncHandler(
     return res
       .status(201)
       .json(
-        new ApiResponse(201, "Successfully Posted Comment", newComment, true)
+        new ApiResponse(201, "Successfully Posted Comment", newComment, true),
       );
-  }
+  },
 );
 
 export const getCommentsByRoomId = asyncHandler(
@@ -291,9 +284,9 @@ export const getCommentsByRoomId = asyncHandler(
     return res
       .status(200)
       .json(
-        new ApiResponse(200, "Fetched Comments", { allCommentsInARoom }, true)
+        new ApiResponse(200, "Fetched Comments", { allCommentsInARoom }, true),
       );
-  }
+  },
 );
 
 export const createDelta = asyncHandler(async (req: Request, res: Response) => {
@@ -346,11 +339,13 @@ export const getLatestVersionAndDeltas = asyncHandler(
             200,
             "Successfully Fetched the Version",
             { latestVersion: newVersion.toObject() },
-            true
-          )
+            true,
+          ),
         );
     } else {
-      const latestVersion = await Version.findById(currentRoom.currentVersionId);
+      const latestVersion = await Version.findById(
+        currentRoom.currentVersionId,
+      );
       if (!latestVersion) {
         throw new ApiError(400, "Version Not Found");
       }
@@ -370,12 +365,15 @@ export const getLatestVersionAndDeltas = asyncHandler(
           new ApiResponse(
             200,
             "Successfully Fetched the Version",
-            { deltas: deltas.map(delta => delta.toObject()), latestVersion: latestVersion.toObject() },
-            true
-          )
+            {
+              deltas: deltas.map((delta) => delta.toObject()),
+              latestVersion: latestVersion.toObject(),
+            },
+            true,
+          ),
         );
     }
-  }
+  },
 );
 
 export const createVersion = asyncHandler(
@@ -392,17 +390,16 @@ export const createVersion = asyncHandler(
       language,
     });
 
-    await Room.findByIdAndUpdate(roomId,{
-      currentVersionId : response._id,
-    }) 
-
+    await Room.findByIdAndUpdate(roomId, {
+      currentVersionId: response._id,
+    });
 
     return res
       .status(201)
       .json(
-        new ApiResponse(201, "Version Created Succesfully", response, true)
+        new ApiResponse(201, "Version Created Succesfully", response, true),
       );
-  }
+  },
 );
 
 export const getVersionsByRoomId = asyncHandler(
@@ -427,9 +424,9 @@ export const getVersionsByRoomId = asyncHandler(
     return res
       .status(201)
       .json(
-        new ApiResponse(201, "Version Succesfully Fetched", versions, true)
+        new ApiResponse(201, "Version Succesfully Fetched", versions, true),
       );
-  }
+  },
 );
 
 export const getDeltaByVersionId = asyncHandler(
@@ -449,34 +446,34 @@ export const getDeltaByVersionId = asyncHandler(
     const deltas = await Delta.find({
       versionId: version._id,
     })
-    .sort({
-      createdAt : 1,
-    }).exec();
+      .sort({
+        createdAt: 1,
+      })
+      .exec();
 
     return res
       .status(200)
       .json(new ApiResponse(200, "Succefully Fetched Data", deltas, true));
-  }
+  },
 );
 
+export const updateVersionId = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { versionId, roomId } = req.body;
 
-export const updateVersionId = asyncHandler( async(req : Request,res : Response) => {
-  const { versionId,roomId } = req.body;
+    if (!versionId) {
+      throw new ApiError(400, "Empty Version Id");
+    }
 
+    const response = await Room.findByIdAndUpdate(roomId, {
+      currentVersionId: versionId,
+    });
 
-  if (!versionId) {
-    throw new ApiError(400, "Empty Version Id");
-  }
-
-  const response = await Room.findByIdAndUpdate(roomId,{
-    currentVersionId : versionId,
-  })
-
-  if (!response) {
-    throw new ApiError(404, "Version Not Found");
-  }
-  return res
-    .status(200)
-    .json(new ApiResponse(200, "Successfully Updated Version",'ok',true));
-
-})
+    if (!response) {
+      throw new ApiError(404, "Version Not Found");
+    }
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "Successfully Updated Version", "ok", true));
+  },
+);
