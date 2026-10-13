@@ -20,6 +20,10 @@ export const createRoom = asyncHandler(
       throw new ApiError(400, "All fields are required");
     }
 
+    const existedRoom = await Room.findOne({ name });
+    if (existedRoom)
+      throw new ApiError(409, "Room with this room name already exists");
+
     // 1. Single DB call: Create room directly
     // 2. Direct array initialization (no need for push or $addToSet during creation)
     const newRoom = await Room.create({
@@ -359,19 +363,17 @@ export const getLatestVersionAndDeltas = asyncHandler(
         throw new ApiError(400, "Version Not found with given RoomId");
       }
 
-      return res
-        .status(200)
-        .json(
-          new ApiResponse(
-            200,
-            "Successfully Fetched the Version",
-            {
-              deltas: deltas.map((delta) => delta.toObject()),
-              latestVersion: latestVersion.toObject(),
-            },
-            true,
-          ),
-        );
+      return res.status(200).json(
+        new ApiResponse(
+          200,
+          "Successfully Fetched the Version",
+          {
+            deltas: deltas.map((delta) => delta.toObject()),
+            latestVersion: latestVersion.toObject(),
+          },
+          true,
+        ),
+      );
     }
   },
 );
