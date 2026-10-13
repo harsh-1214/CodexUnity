@@ -5,7 +5,7 @@ import userRoute from "./routes/user.routes";
 import codeRoute from "./routes/code.routes";
 import roomRoute from "./routes/room.routes";
 import { rateLimit } from "express-rate-limit";
-require("./workers/jobWorker_online_compiler.ts");
+require("./workers/jobWorker_online_compiler");
 const app = express();
 app.use(cors({ origin: "*" }));
 app.use(express.urlencoded({ extended: true }));
